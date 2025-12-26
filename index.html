@@ -20,15 +20,17 @@
         body { font-family: 'Cairo', sans-serif; }
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Prevent scrolling when drawing on mobile */
+        .no-scroll { touch-action: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useRef, useEffect } = React;
 
-        // --- ICONS COMPONENTS (Simple SVG replacements) ---
+        // --- ICONS COMPONENTS ---
         const Icons = {
             CheckCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
             XCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
@@ -40,7 +42,9 @@
             Layers: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
             FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
             Lightbulb: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 12 2a4.65 4.65 0 0 0-4.5 9.5c.7.7 1.23 1.52 1.4 2.5"/></svg>,
-            List: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            List: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+            Edit3: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
+            Trash2: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
         };
 
         const QuizApp = () => {
@@ -51,7 +55,13 @@
             const [score, setScore] = useState(0);
             const [isQuizFinished, setIsQuizFinished] = useState(false);
 
-            // --- DATA: Summary (ملخص شامل - 26 صفحة) ---
+            // --- Drawing State ---
+            const [isPenEnabled, setIsPenEnabled] = useState(false);
+            const [isDrawing, setIsDrawing] = useState(false);
+            const canvasRef = useRef(null);
+            const summaryContainerRef = useRef(null);
+
+            // --- DATA: Summary (26 Pages) ---
             const summaryContent = [
                 {
                     title: "الكيمياء 1: نظريات الضوء والموجات",
@@ -215,7 +225,7 @@
                 }
             ];
 
-            // --- DATA: Questions Arrays ---
+            // --- QUESTIONS DATA ---
             const bookletQuestions = [
                 { id: 1, type: 'TF', question: "تتكون الرابطة الأيونية بين عنصرين الفرق في السالبية الكهربية بينهما أقل من 1.7.", options: ["صواب", "خطأ"], correctAnswer: "خطأ", explanation: "الرابطة الأيونية تتكون عندما يكون الفرق في السالبية الكهربية أكبر من 1.7." },
                 { id: 2, type: 'TF', question: "ذرات الفلز تفقد إلكترون وتتحول إلى أيون موجب.", options: ["صواب", "خطأ"], correctAnswer: "صواب", explanation: "الفلزات تميل لفقد الإلكترونات وتكوين كاتيونات." },
@@ -542,6 +552,9 @@
             const handleTabChange = (tab) => {
                 setActiveTab(tab);
                 restartQuiz();
+                // Reset pen when changing tabs
+                setIsPenEnabled(false);
+                setIsDrawing(false);
             };
 
             const parseText = (text) => {
@@ -554,6 +567,103 @@
                 });
             };
 
+            // --- Drawing Logic ---
+            useEffect(() => {
+                // Resize canvas to match the scrollable content of summary
+                if (activeTab === 'summary' && summaryContainerRef.current && canvasRef.current) {
+                    const canvas = canvasRef.current;
+                    const container = summaryContainerRef.current;
+                    
+                    const updateSize = () => {
+                        // Canvas needs to cover the entire scrollable height
+                        canvas.width = container.offsetWidth;
+                        canvas.height = container.scrollHeight;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = '#ef4444'; // Red color
+                    };
+
+                    // Initial resize and on window resize
+                    updateSize();
+                    window.addEventListener('resize', updateSize);
+                    
+                    // Also observe for content height changes (like images loading or accordion opening if we had any)
+                    const observer = new ResizeObserver(updateSize);
+                    observer.observe(container);
+
+                    return () => {
+                        window.removeEventListener('resize', updateSize);
+                        observer.disconnect();
+                    };
+                }
+            }, [activeTab]);
+
+            const startDrawing = (e) => {
+                if (!isPenEnabled) return;
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+                
+                // Get correct coordinates relative to canvas/viewport accounting for scroll
+                // Since canvas is absolute positioned in relative container, we need offset relative to canvas element
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                setIsDrawing(true);
+            };
+
+            const draw = (e) => {
+                if (!isDrawing || !isPenEnabled) return;
+                // prevent default only if pen enabled to stop scrolling
+                if(e.cancelable) e.preventDefault(); 
+                
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            };
+
+            const stopDrawing = () => {
+                setIsDrawing(false);
+            };
+
+            const clearCanvas = () => {
+                const canvas = canvasRef.current;
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            };
+
             const currentQuestion = questions[currentIndex];
             const progressPercentage = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
@@ -563,7 +673,7 @@
                         <div className="max-w-4xl mx-auto flex items-center justify-between">
                             <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                 <Icons.Layers />
-                               (من الطالب عبدالرحمن) تطبيق الكيمياء الشامل
+                                تطبيق الكيمياء الشامل
                             </h1>
                         </div>
                     </div>
@@ -587,15 +697,48 @@
 
                     <div className="w-full max-w-4xl mx-4 mb-8">
                         {activeTab === 'summary' && (
-                            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 md:p-10 animate-fade-in">
-                                <div className="text-center mb-8">
+                            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 md:p-10 animate-fade-in relative" ref={summaryContainerRef}>
+                                {/* Floating Drawing Controls */}
+                                <div className="fixed bottom-6 left-6 flex flex-col gap-2 z-50">
+                                    <button 
+                                        onClick={() => setIsPenEnabled(!isPenEnabled)}
+                                        className={`p-4 rounded-full shadow-lg transition-all transform hover:scale-110 ${isPenEnabled ? 'bg-indigo-600 text-white ring-4 ring-indigo-200' : 'bg-white text-gray-600'}`}
+                                        title={isPenEnabled ? "تعطيل القلم" : "تفعيل القلم"}
+                                    >
+                                        <Icons.Edit3 />
+                                    </button>
+                                    {isPenEnabled && (
+                                        <button 
+                                            onClick={clearCanvas}
+                                            className="p-4 rounded-full bg-red-500 text-white shadow-lg transition-all transform hover:scale-110"
+                                            title="مسح الرسم"
+                                        >
+                                            <Icons.Trash2 />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Canvas Layer */}
+                                <canvas
+                                    ref={canvasRef}
+                                    className={`absolute top-0 left-0 w-full h-full z-10 ${isPenEnabled ? 'cursor-crosshair no-scroll' : 'pointer-events-none'}`}
+                                    onMouseDown={startDrawing}
+                                    onMouseMove={draw}
+                                    onMouseUp={stopDrawing}
+                                    onMouseLeave={stopDrawing}
+                                    onTouchStart={startDrawing}
+                                    onTouchMove={draw}
+                                    onTouchEnd={stopDrawing}
+                                ></canvas>
+
+                                <div className="text-center mb-8 relative z-0">
                                     <div className="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <Icons.List />
                                     </div>
                                     <h2 className="text-3xl font-bold text-slate-800">ملخص ومراجعة ليالي الامتحان</h2>
                                     <p className="text-slate-500 mt-2">شامل لجميع صفحات الملف (26 صفحة)</p>
                                 </div>
-                                <div className="space-y-8">
+                                <div className="space-y-8 relative z-0">
                                     {summaryContent.map((section, idx) => (
                                         <div key={idx} className="border-r-4 border-indigo-500 pr-5 bg-indigo-50/30 p-4 rounded-lg">
                                             <h3 className="text-xl font-bold text-indigo-800 mb-4 flex items-center gap-2">
@@ -707,4 +850,3 @@
     </script>
 </body>
 </html>
-
