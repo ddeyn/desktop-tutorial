@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق الكيمياء الشامل</title>
+    <title>مراجعة الكيمياء النهائية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -23,16 +23,24 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .correct-answer {
-            background-color: #d1fae5;
-            border-color: #10b981;
-            color: #065f46;
+        .highlight-red {
+            color: #dc2626; /* Tailwind Red-600 */
+            font-weight: bold;
         }
 
-        .wrong-answer {
-            background-color: #fee2e2;
-            border-color: #ef4444;
-            color: #991b1b;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
         }
     </style>
 </head>
@@ -42,33 +50,32 @@
     <header class="bg-emerald-700 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <i data-lucide="calculator" class="w-8 h-8"></i>
+                <i data-lucide="flask-conical" class="w-8 h-8"></i>
                 <div>
-                    <h1 class="text-xl font-bold">تطبيق الكيمياء الشامل</h1>
+                    <h1 class="text-xl font-bold">مراجعة الكيمياء النهائية</h1>
                     <p class="text-xs text-emerald-200 mt-1">إعداد الطالب: عبدالرحمن احمد</p>
                 </div>
             </div>
             
-            <!-- Alert Banner inside Header -->
             <div class="bg-emerald-800/50 px-4 py-2 rounded-lg text-xs md:text-sm text-emerald-100 flex items-center gap-2 border border-emerald-600/50">
-                <i data-lucide="info" class="w-4 h-4"></i>
+                <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
                 <span>ملاحظة: ينصح بمراجعة القوانين والحلول من ملف PDF الأصلي لضمان الدقة التامة.</span>
             </div>
 
             <div class="bg-emerald-800 px-4 py-2 rounded-full flex items-center gap-2 text-sm whitespace-nowrap">
-                <span>القسم:</span>
-                <span id="current-section-title" class="font-bold">مسائل</span>
+                <span>القسم الحالي:</span>
+                <span id="current-section-title" class="font-bold">شرح الملخص</span>
             </div>
         </div>
     </header>
 
     <div class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-6 mt-4">
         
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="md:col-span-3 lg:col-span-3 space-y-4">
             <div class="bg-white rounded-xl shadow p-4 space-y-2 sticky top-24">
-                <button onclick="switchView('quiz')" id="btn-quiz" class="w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors bg-emerald-50 text-emerald-700 font-bold">
-                    <i data-lucide="calculator" class="w-5 h-5"></i> المسائل (Quiz)
+                <button onclick="switchView('summary')" id="btn-summary" class="w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors bg-emerald-50 text-emerald-700 font-bold">
+                    <i data-lucide="book-open" class="w-5 h-5"></i> شرح الملخص
                 </button>
                 <button onclick="switchView('laws')" id="btn-laws" class="w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-gray-50 text-gray-700">
                     <i data-lucide="file-text" class="w-5 h-5"></i> القوانين
@@ -83,68 +90,36 @@
                 </div>
             </div>
 
-            <!-- Quiz Categories Sidebar -->
-            <div id="quiz-sidebar" class="bg-white rounded-xl shadow p-4 animate-fade-in">
-                <h2 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
-                    <i data-lucide="book-open" class="w-5 h-5 text-emerald-600"></i> الأقسام
-                </h2>
-                <div class="space-y-2" id="quiz-categories">
-                    <!-- Injected by JS -->
-                </div>
-            </div>
-
-            <!-- Exam List Sidebar -->
+            <!-- Exam List Sidebar (Only visible in Exams view) -->
             <div id="exam-sidebar" class="bg-white rounded-xl shadow p-4 animate-fade-in hidden">
                 <h2 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
                     <i data-lucide="list" class="w-5 h-5 text-orange-600"></i> قائمة الامتحانات
                 </h2>
                 <div class="space-y-2" id="exam-list">
-                    <!-- Injected by JS -->
+                    <!-- Exam buttons injected here -->
                 </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="md:col-span-9 lg:col-span-9">
             
-            <!-- QUIZ View -->
-            <div id="view-quiz" class="space-y-6 animate-fade-in">
-                <div id="quiz-container" class="bg-white rounded-xl shadow-md overflow-hidden min-h-[500px] flex flex-col">
-                    <!-- Progress -->
-                    <div class="w-full bg-gray-200 h-2">
-                        <div id="quiz-progress" class="bg-emerald-600 h-2 transition-all duration-300" style="width: 0%"></div>
-                    </div>
+            <!-- SUMMARY VIEW -->
+            <div id="view-summary" class="space-y-6 animate-fade-in">
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-500">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-6 h-6 text-emerald-600"></i>
+                        ملخص ومراجعة ليالي الامتحان
+                    </h2>
+                    <p class="text-gray-500">شامل لجميع صفحات الملف (26 صفحة) - مفاهيم ونظريات أساسية.</p>
+                </div>
 
-                    <div class="p-6 md:p-8 flex-grow">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-sm font-semibold text-gray-400" id="question-counter">سؤال 1 من 15</span>
-                            <div class="flex items-center gap-2">
-                                <span id="skipped-badge" class="hidden text-xs text-orange-500 font-bold bg-orange-100 px-2 py-1 rounded"></span>
-                                <span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">النقاط: <span id="score">0</span></span>
-                            </div>
-                        </div>
-
-                        <!-- Question Area -->
-                        <div id="quiz-content">
-                            <!-- Injected by JS -->
-                        </div>
-
-                        <!-- Result Area (Hidden initially) -->
-                        <div id="quiz-result" class="hidden text-center p-10">
-                            <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                                <i data-lucide="award" class="w-12 h-12 text-emerald-600"></i>
-                            </div>
-                            <h2 class="text-3xl font-bold text-gray-800 mb-2" id="result-title">ممتاز!</h2>
-                            <p class="text-gray-500 mb-4 text-lg">الدرجة: <span class="text-emerald-600 font-bold text-2xl" id="final-score">0</span> / <span class="font-bold text-2xl" id="total-questions">15</span></p>
-                            <button onclick="restartQuiz()" class="px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold flex items-center justify-center gap-2 shadow-md mx-auto">
-                                <i data-lucide="refresh-cw" class="w-5 h-5"></i> إعادة الاختبار
-                            </button>
-                        </div>
-                    </div>
+                <div class="space-y-4" id="summary-content">
+                    <!-- Content injected by JS -->
                 </div>
             </div>
 
-            <!-- EXAMS View -->
+            <!-- EXAMS VIEW -->
             <div id="view-exams" class="hidden space-y-6 animate-fade-in">
                 <div id="exam-header" class="bg-white rounded-xl shadow-md p-6 border-t-4 border-orange-500 mb-6 hidden">
                     <h2 class="text-2xl font-bold text-gray-800" id="exam-title"></h2>
@@ -156,13 +131,12 @@
                     </div>
                 </div>
                 <div id="exam-questions-list" class="space-y-4">
-                    <!-- Injected by JS -->
+                    <!-- Exam questions injected here -->
                 </div>
             </div>
 
-            <!-- LAWS View -->
+            <!-- LAWS VIEW -->
             <div id="view-laws" class="hidden space-y-6 animate-fade-in">
-                <!-- Advice Banner -->
                 <div class="bg-blue-50 border-r-4 border-blue-500 p-4 mb-6 rounded-lg shadow-sm">
                     <div class="flex items-start gap-3">
                         <i data-lucide="file-check" class="w-6 h-6 text-blue-600 mt-1"></i>
@@ -179,15 +153,14 @@
                         <i data-lucide="file-text" class="w-6 h-6 text-blue-600"></i>
                         قوانين الكيمياء
                     </h2>
-                    <p class="text-gray-500">تم تجميع كافة القوانين الواردة في الملف المرفق مع الترجمة العربية.</p>
+                    <p class="text-gray-500">القوانين الأساسية مع الترجمة العربية للصيغ.</p>
                 </div>
-                <!-- Laws Content Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="laws-grid">
-                    <!-- Injected by JS -->
+                    <!-- Laws injected here -->
                 </div>
             </div>
 
-            <!-- CONVERSIONS View -->
+            <!-- CONVERSIONS VIEW -->
             <div id="view-conversions" class="hidden space-y-6 animate-fade-in">
                 <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-purple-500">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
@@ -197,7 +170,7 @@
                     <p class="text-gray-500">أساسيات التحويل لحل المسائل بشكل صحيح.</p>
                 </div>
                 <div class="grid grid-cols-1 gap-4" id="conversions-list">
-                    <!-- Injected by JS -->
+                    <!-- Conversions injected here -->
                 </div>
             </div>
 
@@ -210,143 +183,122 @@
         const formatScientific = (val) => {
             if (typeof val === 'string') return val;
             if (val === 0) return "0";
-            
             const absNum = Math.abs(val);
-            
-            // Format large numbers (>10000) or small numbers (<0.001) to scientific notation
             if (absNum >= 10000 || absNum < 0.001) {
                 const exponent = Math.floor(Math.log10(absNum));
                 const mantissa = val / Math.pow(10, exponent);
-                // Convert typical computer "e" notation to nice HTML
                 return `${mantissa.toFixed(2)} × 10<sup>${exponent}</sup>`;
             }
-            
-            // Otherwise return normal number, up to 3 decimal places if needed
             return Number(val.toFixed(3)).toString();
         };
 
-        // --- Data ---
-        const LAWS = [
-            { id: 'light_waves', title: 'الطاقة والذرة', icon: 'zap' },
-            { id: 'molarity', title: 'المولارية والفورمالية', icon: 'beaker' },
-            { id: 'normality', title: 'العيارية والمعايرة', icon: 'ruler' },
-            { id: 'ppm_ppb', title: 'تراكيز الأجزاء', icon: 'scale' },
-            { id: 'percentage', title: 'النسب المئوية', icon: 'percent' },
-            { id: 'equilibrium', title: 'الأس الهيدروجيني والاتزان', icon: 'droplet' },
+        // --- SUMMARY CONTENT ---
+        const SUMMARY_DATA = [
+            {
+                title: "1. نظريات الضوء والموجات",
+                points: [
+                    "نظريات تفسير الضوء هما: <span class='highlight-red'>النظرية الموجية</span> و <span class='highlight-red'>النظرية الحبيبية</span>.",
+                    "اعتبر العالم <span class='highlight-red'>إسحاق نيوتن</span> ان الضوء يتكون من تيار من الحبيبات الدقيقة تسير في خطوط مستقيمة.",
+                    "العالم الذى قال ان الضوء عبارة عن حركة موجية هو <span class='highlight-red'>كريستيان هينجز</span>.",
+                    "العالم الذي ارسى قاعدة ان الضوء عبارة عن حركة موجية هو <span class='highlight-red'>توماس يونج</span>.",
+                    "<span class='highlight-red'>الموجات الكهرومغناطيسية</span> هي الموجات التي يمكنها الانتشار في الفراغ وتتكون من جزأين هما كهربي و مغناطيسي.",
+                    "امثلة: الراديو، الميكروويف، اشعة تحت الحمراء، اشعة اكس، الضوء المرئى، اشعة جاما، الاشعة فوق بنفسجية.",
+                    "الموجات ذات أدنى تردد وأعلى طول موجي هي <span class='highlight-red'>موجات الراديو</span>.",
+                    "تستخدم <span class='highlight-red'>موجات الراديو</span> في نقل الإشارات، ويصل طولها الى اميال.",
+                    "تستخدم <span class='highlight-red'>موجات المايكروويف</span> في نقل البيانات والطهي (طولها من سنتيمترات الى قدم).",
+                    "<span class='highlight-red'>الموجات فوق البنفسجية</span> هي السبب في حروق الشمس وبعض السرطانات.",
+                    "تستخدم <span class='highlight-red'>الأشعة السينية</span> في تصوير العظام.",
+                    "أعلى تردد وأقل طول موجي هي <span class='highlight-red'>أشعة جاما</span>.",
+                    "تنتشر الاشعة الكهرومغناطيسية بسرعة <span class='highlight-red'>3 × 10^8 م/ث</span>."
+                ]
+            },
+            {
+                title: "2. خصائص الموجات والطيف",
+                points: [
+                    "<span class='highlight-red'>الطول الموجى</span>: هو المسافة بين قمتين او قاعيين متتاليين.",
+                    "<span class='highlight-red'>العدد الموجى</span>: عدد الأمواج التي تقع على مسافة 1 سم (مقلوب الطول الموجي).",
+                    "<span class='highlight-red'>التردد</span>: عدد اطوال الأمواج التي تمر بنقطة معينة في الثانية الواحدة.",
+                    "<span class='highlight-red'>سعة الموجة</span>: مقدار الانخفاض والارتفاع عن خط سير الموجة.",
+                    "التردد = سرعة الضوء / الطول الموجى.",
+                    "<span class='highlight-red'>طيف الامتصاص</span>: خطوط منفصلة سوداء (انتقال من أدنى لأعلى).",
+                    "<span class='highlight-red'>طيف الانبعاث</span>: خطوط منفصلة ملونة (انتقال من أعلى لأدنى).",
+                    "سلاسل طيف الهيدروجين: <span class='highlight-red'>لايمان</span> (UV، المستوى 1)، <span class='highlight-red'>بالمر</span> (مرئي، المستوى 2)، <span class='highlight-red'>باشن</span> (IR، المستوى 3)."
+                ]
+            },
+            {
+                title: "3. نظريات الذرة وأعداد الكم",
+                points: [
+                    "النظرية الكمية لبلانك: الاشعاع ينبعث على هيئة <span class='highlight-red'>كمات</span> من الطاقة.",
+                    "نظرية اينشتاين: الضوء عبارة عن <span class='highlight-red'>فوتونات</span>.",
+                    "<span class='highlight-red'>العدد الكتلى</span> = بروتونات + نيترونات. <span class='highlight-red'>العدد الذرى</span> = بروتونات.",
+                    "الذرة متعادلة، النواة موجبة، الالكترونات سالبة.",
+                    "عدد الالكترونات في المستوى الرئيسي = <span class='highlight-red'>2n^2</span>.",
+                    "سعات المستويات الفرعية: s(2)، p(6)، d(10)، f(14).",
+                    "<span class='highlight-red'>قاعدة هوند</span>: لا يحدث ازدواج الا بعد ان تشغل الاوربيتالات فرادى."
+                ]
+            },
+            {
+                title: "4. الأجهزة (Flame Photometer & Spectrophotometer)",
+                points: [
+                    "<span class='highlight-red'>Flame Photometer</span>: يعتمد على استثارة الذرات باللهب. كفء للعناصر أحادية التكافؤ (Na, K).",
+                    "<span class='highlight-red'>التداخل الذاتي</span>: امتصاص الطيف الناتج من ذرات نفس العنصر.",
+                    "<span class='highlight-red'>Spectrophotometer</span>: يقيس الضوء النافذ. لمبة التنجستين للمنطقة المرئية، والهالوجين للفوق بنفسجية.",
+                    "<span class='highlight-red'>موحد الضوء (Monochromator)</span>: يقسم الضوء الى حزم ضوئية.",
+                    "الامتصاص يتناسب طرديا مع التركيز."
+                ]
+            },
+            {
+                title: "5. الروابط الكيميائية",
+                points: [
+                    "<span class='highlight-red'>الرابطة الأيونية</span>: بين فلز ولا فلز (فرق السالبية > 1.7).",
+                    "<span class='highlight-red'>الرابطة التساهمية</span>: بين لا فلزين (فرق السالبية < 1.7).",
+                    "تساهمية <span class='highlight-red'>نقية</span> (فرق السالبية 0)، تساهمية <span class='highlight-red'>قطبية</span> (فرق السالبية متوسط).",
+                    "<span class='highlight-red'>الرابطة الهيدروجينية</span>: بين الجزيئات، أضعف وأطول من التساهمية."
+                ]
+            },
+            {
+                title: "6. المحاليل",
+                points: [
+                    "<span class='highlight-red'>محلول حقيقي</span>: متجانس، قطر الدقائق < 10 انجستروم.",
+                    "<span class='highlight-red'>محلول معلق</span>: يترسب اذا ترك ساكنا، قطر الدقائق > 100 انجستروم.",
+                    "<span class='highlight-red'>محلول غروي</span>: وسط (10-100 انجستروم).",
+                    "<span class='highlight-red'>الكتروليتات</span>: توصل الكهرباء (أحماض/قواعد قوية). غير الكتروليتات (سكر).",
+                    "المحلول المشبع لا يقبل المزيد من المذاب."
+                ]
+            },
+            {
+                title: "7. الحسابات والتركيزات",
+                points: [
+                    "<span class='highlight-red'>الوزن الفورمالي</span>: مجموع الاوزان الذرية في الصيغة الأولية.",
+                    "<span class='highlight-red'>التركيز الفورمالي</span>: عدد الأوزان الفورمالية في اللتر.",
+                    "<span class='highlight-red'>التركيز المولر</span>: عدد المولات في اللتر.",
+                    "للمركبات التي صيغتها الأولية هي نفسها الجزيئية: الفورمالية = المولارية."
+                ]
+            },
+            {
+                title: "8. المعايرة",
+                points: [
+                    "<span class='highlight-red'>التركيز العياري (N)</span>: عدد المكافئات في اللتر.",
+                    "الوزن المكافئ للحمض = الوزن الجزيئي / عدد الهيدروجين.",
+                    "<span class='highlight-red'>المعايرة</span>: تعيين تركيز مجهول باستخدام مادة قياسية.",
+                    "شروط المادة القياسية: نقاوة عالية، ثبات، وزن مكافئ عالي.",
+                    "نقطة النهاية تتغير عندها خاصية فيزيائية (مثل اللون)."
+                ]
+            },
+            {
+                title: "9. الاتزان الكيميائي",
+                points: [
+                    "<span class='highlight-red'>قانون فعل الكتلة</span>: السرعة تتناسب مع الكتل الفعالة (التركيزات).",
+                    "<span class='highlight-red'>قاعدة لوشاتليه</span>: النظام المتزن يقاوم التغير ليعود للاتزان.",
+                    "<span class='highlight-red'>ثابت تأين الماء Kw</span> = 1 × 10^-14.",
+                    "تركيز الماء لا يكتب في معادلة ثابت الاتزان.",
+                    "ثابت الاتزان يتغير فقط بتغير <span class='highlight-red'>درجة الحرارة</span>."
+                ]
+            }
         ];
 
-        // Static Quiz Bank (Data preserved as requested)
-        const STATIC_QUIZ_BANK = {
-            light_waves: [
-                { id: 1, questionText: "ضوء طوله الموجي 500 nm. احسب تردده. (C=3×10⁸ m/s)", options: [6e14, 5e14, 1.5e11, 6e15], correctAnswer: 6e14, unit: 'Hz', specificFormula: 'ν = C / λ', solutionSteps: ['λ = 500 × 10⁻⁹ m', 'ν = 3×10⁸ / 500×10⁻⁹ = 6×10¹⁴ Hz'] },
-                { id: 2, questionText: "احسب طاقة فوتون تردده 2×10¹⁴ Hz. (h=6.626×10⁻³⁴)", options: [1.325e-19, 3.313e-19, 1.325e-20, 4.5e-19], correctAnswer: 1.325e-19, unit: 'J', specificFormula: 'E = h × ν', solutionSteps: ['E = 6.626×10⁻³⁴ × 2×10¹⁴ = 1.325×10⁻¹⁹ J'] },
-                { id: 3, questionText: "احسب الطاقة المكافئة لكتلة 1 جرام وفقاً لأينشتاين.", options: [9e13, 9e16, 3e8, 9e10], correctAnswer: 9e13, unit: 'J', specificFormula: 'E = m c²', solutionSteps: ['m = 1g = 0.001 kg', 'E = 0.001 × (3×10⁸)² = 9×10¹³ J'] },
-                { id: 4, questionText: "احسب العدد الموجي (Wavenumber) لضوء طوله الموجي 500 nm بوحدة cm⁻¹.", options: [20000, 50000, 2000, 500], correctAnswer: 20000, unit: 'cm⁻¹', specificFormula: '̅ν = 1 / λ(cm)', solutionSteps: ['λ = 500 nm = 500×10⁻⁷ cm', '̅ν = 1 / 5×10⁻⁵ = 20,000 cm⁻¹'] },
-                { id: 5, questionText: "فوتون طاقته 4×10⁻¹⁹ J. احسب تردده.", options: [6.04e14, 1.5e14, 2.65e-15, 6.6e34], correctAnswer: 6.04e14, unit: 'Hz', specificFormula: 'ν = E / h', solutionSteps: ['ν = 4×10⁻¹⁹ / 6.626×10⁻³⁴ ≈ 6.04×10¹⁴ Hz'] },
-                { id: 6, questionText: "ما الطول الموجي (nm) لفوتون طاقته 3.5×10⁻¹⁹ J؟", options: [568, 450, 600, 350], correctAnswer: 568, unit: 'nm', specificFormula: 'λ = hc / E', solutionSteps: ['λ = (6.626×10⁻³⁴ × 3×10⁸) / 3.5×10⁻¹⁹', 'λ ≈ 5.68×10⁻⁷ m = 568 nm'] },
-                { id: 7, questionText: "اذا كان العدد الموجي 25000 cm⁻¹، فما الطول الموجي بالنانومتر؟", options: [400, 250, 500, 40], correctAnswer: 400, unit: 'nm', specificFormula: 'λ = 1 / ̅ν', solutionSteps: ['λ(cm) = 1/25000 = 0.00004 cm', 'λ(nm) = 0.00004 × 10⁷ = 400 nm'] },
-                { id: 8, questionText: "العلاقة بين الطول الموجي (λ) والتردد (ν) هي علاقة:", options: ["طردية", "عكسية", "تربيعية", "لا توجد علاقة"], correctAnswer: "عكسية", unit: '', specificFormula: 'ν ∝ 1/λ', solutionSteps: ['لأن حاصل ضربهما يساوي مقدار ثابت (سرعة الضوء C).'] },
-                { id: 9, questionText: "احسب كتلة جسم (kg) تتحول كلياً لإنتاج طاقة 4.5×10¹⁶ J.", options: [0.5, 1, 2, 0.25], correctAnswer: 0.5, unit: 'kg', specificFormula: 'm = E / c²', solutionSteps: ['m = 4.5×10¹⁶ / (3×10⁸)² = 4.5×10¹⁶ / 9×10¹⁶ = 0.5 kg'] },
-                { id: 10, questionText: "فوتون تردده 600 THz (تيرا هرتز). احسب طوله الموجي.", options: [500, 600, 400, 300], correctAnswer: 500, unit: 'nm', specificFormula: 'λ = C / ν', solutionSteps: ['THz = 10¹² Hz', 'ν = 600×10¹² = 6×10¹⁴ Hz', 'λ = 3×10⁸ / 6×10¹⁴ = 5×10⁻⁷ m = 500 nm'] },
-                { id: 11, questionText: "قارن بين طاقة الضوء الأزرق (400nm) والأحمر (700nm). أيهما طاقته أكبر؟", options: ["الأزرق", "الأحمر", "متساويان", "لا يمكن التحديد"], correctAnswer: "الأزرق", unit: '', specificFormula: 'E ∝ 1/λ', solutionSteps: ['كلما قل الطول الموجي زادت الطاقة. الأزرق (400nm) أقل في الطول الموجي من الأحمر، لذا طاقته أكبر.'] },
-                { id: 12, questionText: "ما سرعة موجة طولها 2m وترددها 150 MHz؟", options: [3e8, 1.5e8, 300, 75], correctAnswer: 3e8, unit: 'm/s', specificFormula: 'v = λ × ν', solutionSteps: ['v = 2 × 150×10⁶ = 300×10⁶ = 3×10⁸ m/s (سرعة الضوء)'] },
-                { id: 13, questionText: "احسب طاقة مول واحد من الفوتونات (تردد 5×10¹⁴ Hz).", options: [199500, 3.3e-19, 6e23, 1000], correctAnswer: 199500, unit: 'J/mol', specificFormula: 'E_total = N_A × hν', solutionSteps: ['E_photon = 6.626×10⁻³⁴ × 5×10¹⁴ = 3.313×10⁻¹⁹ J', 'E_mol = 3.313×10⁻¹⁹ × 6.022×10²³ ≈ 199,500 J'] },
-                { id: 14, questionText: "وحدة قياس ثابت بلانك (h) هي:", options: ["J.s", "J/s", "J.m", "N.s"], correctAnswer: "J.s", unit: '', specificFormula: 'E = hν → h = E/ν = J/s⁻¹ = J.s', solutionSteps: ['الجول × ثانية (J.s) هي الوحدة الصحيحة.'] },
-                { id: 15, questionText: "إذا زاد التردد للضعف، فإن طاقة الفوتون:", options: ["تزداد للضعف", "تقل للنصف", "تزداد 4 أضعاف", "لا تتغير"], correctAnswer: "تزداد للضعف", unit: '', specificFormula: 'E ∝ ν', solutionSteps: ['العلاقة طردية خطية بين الطاقة والتردد.'] }
-            ],
-            molarity: [
-                { id: 1, questionText: "أذيب 40g NaOH (MW=40) في 500ml ماء. احسب المولارية.", options: [2, 1, 0.5, 4], correctAnswer: 2, unit: 'M', specificFormula: 'M = wt / (MW×V)', solutionSteps: ['Moles = 40/40 = 1 mol', 'V = 0.5 L', 'M = 1/0.5 = 2 M'] },
-                { id: 2, questionText: "احسب وزن HCl (MW=36.5) اللازم لتحضير 1L بتركيز 0.1M.", options: [3.65, 36.5, 0.365, 7.3], correctAnswer: 3.65, unit: 'g', specificFormula: 'wt = M×MW×V', solutionSteps: ['wt = 0.1 × 36.5 × 1 = 3.65 g'] },
-                { id: 3, questionText: "محلول حجمه 200ml يحتوي على 0.2 مول مذاب. احسب التركيز.", options: [1, 0.1, 0.04, 2], correctAnswer: 1, unit: 'M', specificFormula: 'M = n / V', solutionSteps: ['V = 0.2 L', 'M = 0.2 / 0.2 = 1 M'] },
-                { id: 4, questionText: "حمض H2SO4 (MW=98) كثافته 1.84 g/ml وتركيزه 98%. احسب المولارية.", options: [18.4, 9.8, 1.84, 10], correctAnswer: 18.4, unit: 'M', specificFormula: 'M = (% × d × 10) / MW', solutionSteps: ['M = (98 × 1.84 × 10) / 98', 'M = 18.4 M'] },
-                { id: 5, questionText: "كم مل من حمض 12M يلزم لتحضير 500ml بتركيز 1.2M؟", options: [50, 100, 25, 60], correctAnswer: 50, unit: 'ml', specificFormula: 'C1V1 = C2V2', solutionSteps: ['12 × V1 = 1.2 × 500', '12V1 = 600', 'V1 = 50 ml'] },
-                { id: 6, questionText: "التركيز الفورمالي (F) لملح NaCl هو 0.5F. كم يكافئ بالمولارية؟", options: [0.5, 1, 0.25, 2], correctAnswer: 0.5, unit: 'M', specificFormula: 'F ≈ M', solutionSteps: ['حسابياً، التركيز الفورمالي يساوي المولاري للأملاح المتأينة.'] },
-                { id: 7, questionText: "احسب المولالية (m) عند إذابة 10g مذاب (MW=50) في 500g ماء.", options: [0.4, 0.2, 0.5, 1], correctAnswer: 0.4, unit: 'm', specificFormula: 'm = mol / kg solvent', solutionSteps: ['mol = 10/50 = 0.2', 'solvent = 0.5 kg', 'm = 0.2 / 0.5 = 0.4 m'] },
-                { id: 8, questionText: "مزج 100ml من 1M HCl مع 100ml من 2M HCl. ما التركيز الجديد؟", options: [1.5, 3, 1, 2], correctAnswer: 1.5, unit: 'M', specificFormula: 'M_mix = (M1V1+M2V2)/(V1+V2)', solutionSteps: ['Total mol = (1×0.1) + (2×0.1) = 0.3', 'Total Vol = 0.2 L', 'M = 0.3/0.2 = 1.5 M'] },
-                { id: 9, questionText: "محلول CaCl2 تركيزه 0.1M. ما تركيز أيونات الكلوريد Cl-؟", options: [0.2, 0.1, 0.3, 0.05], correctAnswer: 0.2, unit: 'M', specificFormula: '[Ion] = M × coeff', solutionSteps: ['CaCl2 → Ca + 2Cl', '[Cl] = 0.1 × 2 = 0.2 M'] },
-                { id: 10, questionText: "ما حجم الماء اللازم إضافته لـ 50ml من 0.4M ليصبح 0.1M؟", options: [150, 200, 100, 50], correctAnswer: 150, unit: 'ml', specificFormula: 'V_added = V2 - V1', solutionSteps: ['0.4 × 50 = 0.1 × V2', 'V2 = 200 ml', 'Added = 200 - 50 = 150 ml'] },
-                { id: 11, questionText: "محلول كثافته 1.2 g/ml ومولاريته 2M (MW=40). احسب نسبته الوزنية % تقريباً.", options: [6.67, 10, 5, 8], correctAnswer: 6.67, unit: '%', specificFormula: '% = (M × MW) / (d × 10)', solutionSteps: ['% = (2 × 40) / (1.2 × 10) = 80 / 12 = 6.67 %'] },
-                { id: 12, questionText: "ما الكسر المولي للمذاب في محلول 1m (مولالي) في الماء؟ (MW H2O=18)", options: [0.0177, 0.1, 0.5, 0.05], correctAnswer: 0.0177, unit: '', specificFormula: 'X = n_solute / n_total', solutionSteps: ['1 kg water = 1000/18 = 55.5 mol', 'n_total = 1 + 55.5 = 56.5', 'X = 1 / 56.5 ≈ 0.0177'] },
-                { id: 13, questionText: "احسب وزن الفورمالية (FW) لـ Na2CO3. (Na=23, C=12, O=16)", options: [106, 83, 58, 100], correctAnswer: 106, unit: 'g/mol', specificFormula: 'FW = Sum(atomic wts)', solutionSteps: ['(2×23) + 12 + (3×16) = 46 + 12 + 48 = 106'] },
-                { id: 14, questionText: "لتحضير محلول قياسي بدقة عالية، نستخدم:", options: ["الدورق الحجمي", "الكأس الزجاجي", "المخبار المدرج", "الماصة"], correctAnswer: "الدورق الحجمي", unit: '', specificFormula: 'أدوات المعمل', solutionSteps: ['الدورق الحجمي (Volumetric Flask) هو الأداة المصممة لتحضير تراكيز دقيقة.'] },
-                { id: 15, questionText: "حول 5000 mg/L إلى مولارية لمركب وزنه 50.", options: [0.1, 0.5, 1, 0.01], correctAnswer: 0.1, unit: 'M', specificFormula: 'M = (mg/L) / (1000 × MW)', solutionSteps: ['5000 mg/L = 5 g/L', 'M = 5 / 50 = 0.1 M'] }
-            ],
-            normality: [
-                { id: 1, questionText: "احسب العيارية (N) لمحلول 0.5M H2SO4.", options: [1, 0.5, 0.25, 2], correctAnswer: 1, unit: 'N', specificFormula: 'N = M × n', solutionSteps: ['n (H2SO4) = 2', 'N = 0.5 × 2 = 1 N'] },
-                { id: 2, questionText: "محلول 0.1N HCl، كم مولاريته؟", options: [0.1, 0.2, 0.05, 1], correctAnswer: 0.1, unit: 'M', specificFormula: 'M = N / n', solutionSteps: ['n (HCl) = 1', 'M = 0.1 / 1 = 0.1 M'] },
-                { id: 3, questionText: "احسب الوزن المكافئ (Eq.Wt) لـ H3PO4 (MW=98) في تفاعل تعادل كامل.", options: [32.6, 98, 49, 24.5], correctAnswer: 32.6, unit: 'g/eq', specificFormula: 'EqWt = MW / n', solutionSteps: ['n = 3', 'EqWt = 98 / 3 ≈ 32.66'] },
-                { id: 4, questionText: "كم عدد المكافئات في 9.8g من H2SO4 (MW=98)؟", options: [0.2, 0.1, 0.5, 1], correctAnswer: 0.2, unit: 'eq', specificFormula: 'Eq = wt / EqWt', solutionSteps: ['EqWt = 98/2 = 49', 'Eq = 9.8 / 49 = 0.2'] },
-                { id: 5, questionText: "معايرة: 20ml حمض مجهول تعادل مع 40ml من 0.1N قاعدة. ما عيارية الحمض؟", options: [0.2, 0.1, 0.4, 0.05], correctAnswer: 0.2, unit: 'N', specificFormula: 'N1V1 = N2V2', solutionSteps: ['N1 × 20 = 0.1 × 40', 'N1 = 4 / 20 = 0.2 N'] },
-                { id: 6, questionText: "احسب عيارية Al(OH)3 (MW=78) تركيزه 0.1M.", options: [0.3, 0.1, 0.9, 0.03], correctAnswer: 0.3, unit: 'N', specificFormula: 'N = M × 3', solutionSteps: ['n (OH) = 3', 'N = 0.1 × 3 = 0.3 N'] },
-                { id: 7, questionText: "لتحضير 1N من Na2CO3 (MW=106)، كم جرام نذيب في لتر؟", options: [53, 106, 212, 26.5], correctAnswer: 53, unit: 'g', specificFormula: 'wt = N × EqWt × V', solutionSteps: ['EqWt = 106/2 = 53', 'wt = 1 × 53 × 1 = 53 g'] },
-                { id: 8, questionText: "في تفاعل أكسدة اختزال: Fe+2 -> Fe+3 + e. ما قيمة n؟", options: [1, 2, 3, 0], correctAnswer: 1, unit: '', specificFormula: 'n = electrons transferred', solutionSteps: ['عدد الإلكترونات المفقودة = 1.'] },
-                { id: 9, questionText: "عيارية KMnO4 (MW=158) في وسط حمضي (n=5) لمحلول 0.02M.", options: [0.1, 0.02, 0.5, 0.004], correctAnswer: 0.1, unit: 'N', specificFormula: 'N = M × 5', solutionSteps: ['N = 0.02 × 5 = 0.1 N'] },
-                { id: 10, questionText: "أي الأحماض التالية له نفس القيمة للمولارية والعيارية؟", options: ["HCl", "H2SO4", "H3PO4", "H2CO3"], correctAnswer: "HCl", unit: '', specificFormula: 'n = 1', solutionSteps: ['لأن n=1 في HCl، فتكون N=M.'] },
-                { id: 11, questionText: "عدد ملي مكافئات في 50ml من 0.2N يساوي:", options: [10, 5, 20, 100], correctAnswer: 10, unit: 'meq', specificFormula: 'meq = N × V(ml)', solutionSteps: ['meq = 0.2 × 50 = 10'] },
-                { id: 12, questionText: "الوزن المكافئ لـ CaCl2 (MW=111).", options: [55.5, 111, 37, 222], correctAnswer: 55.5, unit: 'g/eq', specificFormula: 'MW / 2', solutionSteps: ['n = 2', '111 / 2 = 55.5'] },
-                { id: 13, questionText: "محلول 3N خفف من 100ml إلى 300ml. ما العيارية الجديدة؟", options: [1, 0.33, 9, 1.5], correctAnswer: 1, unit: 'N', specificFormula: 'N1V1 = N2V2', solutionSteps: ['3 × 100 = N2 × 300', '300 = 300 N2', 'N2 = 1'] },
-                { id: 14, questionText: "كتلة هيدروكسيد الصوديوم (MW=40) في 500ml من 0.1N.", options: [2, 4, 1, 0.5], correctAnswer: 2, unit: 'g', specificFormula: 'wt = N × EqWt × V', solutionSteps: ['n=1, EqWt=40', 'wt = 0.1 × 40 × 0.5 = 2 g'] },
-                { id: 15, questionText: "ما حجم 0.5N اللازم لمعايرة 10ml من 1N؟", options: [20, 10, 5, 50], correctAnswer: 20, unit: 'ml', specificFormula: 'V1 = (N2V2)/N1', solutionSteps: ['V1 = (1 × 10) / 0.5 = 20 ml'] }
-            ],
-            ppm_ppb: [
-                { id: 1, questionText: "عينة 500ml تحتوي على 5mg مذاب. احسب PPM.", options: [10, 5, 1, 100], correctAnswer: 10, unit: 'PPM', specificFormula: 'PPM = mg / L', solutionSteps: ['L = 0.5', 'PPM = 5 / 0.5 = 10 PPM'] },
-                { id: 2, questionText: "حول 0.02% إلى PPM.", options: [200, 2000, 20, 0.0002], correctAnswer: 200, unit: 'PPM', specificFormula: 'PPM = % × 10,000', solutionSteps: ['0.02 × 10,000 = 200 PPM'] },
-                { id: 3, questionText: "تركيز 1 PPM يكافئ كم PPB؟", options: [1000, 1, 100, 10], correctAnswer: 1000, unit: 'PPB', specificFormula: '1 PPM = 1000 PPB', solutionSteps: ['الضرب في 1000.'] },
-                { id: 4, questionText: "كم mg في 2L من محلول 50 PPM؟", options: [100, 50, 25, 200], correctAnswer: 100, unit: 'mg', specificFormula: 'mg = PPM × L', solutionSteps: ['mg = 50 × 2 = 100 mg'] },
-                { id: 5, questionText: "عينة تربة 1kg تحتوي على 500µg (ميكروجرام) رصاص. احسب PPB.", options: [500, 0.5, 500000, 50], correctAnswer: 500, unit: 'PPB', specificFormula: 'PPB = µg / kg', solutionSteps: ['500 µg / 1 kg = 500 PPB'] },
-                { id: 6, questionText: "حول 5000 PPB إلى PPM.", options: [5, 0.5, 50, 5000000], correctAnswer: 5, unit: 'PPM', specificFormula: 'PPM = PPB / 1000', solutionSteps: ['5000 / 1000 = 5 PPM'] },
-                { id: 7, questionText: "محلول 0.001 M من NaCl (MW=58.5). احسب PPM تقريباً.", options: [58.5, 5.85, 585, 0.58], correctAnswer: 58.5, unit: 'PPM', specificFormula: 'PPM = M × MW × 1000', solutionSteps: ['mg/L = 0.001 mol/L × 58.5 g/mol × 1000 mg/g', 'PPM = 58.5'] },
-                { id: 8, questionText: "الحد المسموح به 2 PPM. عينة بها 0.0005%. هل هي آمنة؟", options: ["غير آمنة (5 PPM)", "آمنة (0.5 PPM)", "آمنة (0.005 PPM)", "غير آمنة (50 PPM)"], correctAnswer: "غير آمنة (5 PPM)", unit: '', specificFormula: 'Compare', solutionSteps: ['0.0005% = 5 PPM.', '5 > 2، إذن غير آمنة.'] },
-                { id: 9, questionText: "احسب النسبة المئوية لتركيز 10000 PPM.", options: [1, 0.1, 10, 0.01], correctAnswer: 1, unit: '%', specificFormula: '% = PPM / 10000', solutionSteps: ['10000 / 10000 = 1%'] },
-                { id: 10, questionText: "ما حجم الماء (L) لإذابة 10mg ليصبح 1 PPM؟", options: [10, 1, 5, 0.1], correctAnswer: 10, unit: 'L', specificFormula: 'V = mg / PPM', solutionSteps: ['10 / 1 = 10 L'] },
-                { id: 11, questionText: "450 µg في 500 ml. احسب PPM.", options: [0.9, 0.45, 900, 9], correctAnswer: 0.9, unit: 'PPM', specificFormula: 'mg/L', solutionSteps: ['450 µg = 0.45 mg', '500 ml = 0.5 L', '0.45 / 0.5 = 0.9 PPM'] },
-                { id: 12, questionText: "1 جرام في طن (1000kg). يساوي:", options: [1, 1000, 0.001, 10], correctAnswer: 1, unit: 'PPM', specificFormula: '1g/10⁶g', solutionSteps: ['1g في 1,000,000g هو تعريف الـ PPM.'] },
-                { id: 13, questionText: "تركيز الفلورايد 1 PPM. كم جرام في خزان 1000 لتر؟", options: [1, 10, 0.1, 1000], correctAnswer: 1, unit: 'g', specificFormula: 'g = (PPM × L)/1000', solutionSteps: ['mg = 1 × 1000 = 1000 mg', '1000 mg = 1 g'] },
-                { id: 14, questionText: "محلول كثافته 1.5 g/ml وتركيزه 1500 mg/kg. احسب mg/L.", options: [2250, 1000, 1500, 3000], correctAnswer: 2250, unit: 'mg/L', specificFormula: 'mg/L = mg/kg × d', solutionSteps: ['1500 × 1.5 = 2250 mg/L'] },
-                { id: 15, questionText: "يستخدم PPB لقياس:", options: ["التراكيز الضئيلة جداً", "التراكيز العالية", "الكثافة", "الحجم"], correctAnswer: "التراكيز الضئيلة جداً", unit: '', specificFormula: 'Concept', solutionSteps: ['Trace elements (العناصر النادرة) تقاس بـ PPB.'] }
-            ],
-            percentage: [
-                { id: 1, questionText: "أذيب 5g ملح في 95g ماء. احسب % (w/w).", options: [5, 5.26, 4.7, 10], correctAnswer: 5, unit: '%', specificFormula: '% = 5 / (5+95)', solutionSteps: ['Wt total = 100g', '5/100 = 5%'] },
-                { id: 2, questionText: "محلول 10% (w/v). كم جرام في 500ml؟", options: [50, 10, 5, 100], correctAnswer: 50, unit: 'g', specificFormula: 'wt = % × V / 100', solutionSteps: ['(10 × 500)/100 = 50 g'] },
-                { id: 3, questionText: "احسب %(v/v) عند خلط 20ml كحول مع 80ml ماء.", options: [20, 25, 80, 10], correctAnswer: 20, unit: '%', specificFormula: '% = v_solute / v_total', solutionSteps: ['20 / (20+80) = 20/100 = 20%'] },
-                { id: 4, questionText: "محلول 20% (w/v) وكثافته 1.25 g/ml. احسب %(w/w).", options: [16, 25, 20, 15], correctAnswer: 16, unit: '%', specificFormula: '%ww = %wv / d', solutionSteps: ['20 / 1.25 = 16%'] },
-                { id: 5, questionText: "لتحضير 200g من محلول 5% (w/w). كم جرام مذاب نحتاج؟", options: [10, 5, 20, 40], correctAnswer: 10, unit: 'g', specificFormula: 'wt = % × total / 100', solutionSteps: ['5 × 200 / 100 = 10 g'] },
-                { id: 6, questionText: "كم مل ماء يضاف لـ 100ml تركيز 50% ليصبح 25%؟", options: [100, 50, 200, 150], correctAnswer: 100, unit: 'ml', specificFormula: 'C1V1 = C2V2', solutionSteps: ['50×100 = 25×V2', 'V2=200', 'Added = 200-100 = 100 ml'] },
-                { id: 7, questionText: "احسب التركيز الأسموزي لمحلول يحتوي على 0.5 مول مذاب في 2 لتر.", options: [0.25, 0.5, 1, 0.1], correctAnswer: 0.25, unit: 'Osmol/L', specificFormula: 'Osmolarity = n / V', solutionSteps: ['0.5 / 2 = 0.25'] },
-                { id: 8, questionText: "محلول 15g في 60ml. احسب %(w/v).", options: [25, 15, 20, 30], correctAnswer: 25, unit: '%', specificFormula: '15/60 × 100', solutionSteps: ['0.25 × 100 = 25%'] },
-                { id: 9, questionText: "كثافة الماء النقي:", options: [1, 0.5, 10, 100], correctAnswer: 1, unit: 'g/ml', specificFormula: 'Constant', solutionSteps: ['1 g/ml عند 4 درجات مئوية.'] },
-                { id: 10, questionText: "محلول 30% (w/w). كم جرام مذيب في 100g محلول؟", options: [70, 30, 100, 40], correctAnswer: 70, unit: 'g', specificFormula: 'Solvent = Total - Solute', solutionSteps: ['100 - 30 = 70 g'] },
-                { id: 11, questionText: "حول 50000 PPM إلى نسبة مئوية.", options: [5, 0.5, 50, 0.05], correctAnswer: 5, unit: '%', specificFormula: '% = PPM / 10000', solutionSteps: ['50000 / 10000 = 5%'] },
-                { id: 12, questionText: "عند إضافة 10g ملح لـ 100ml ماء (d=1). النسبة الوزنية تكون:", options: [9.09, 10, 11, 5], correctAnswer: 9.09, unit: '%', specificFormula: '10 / (10+100)', solutionSteps: ['10 / 110 × 100 = 9.09%'] },
-                { id: 13, questionText: "الفرق بين %(w/v) و %(w/w) يعتمد على:", options: ["الكثافة", "درجة الحرارة", "الضغط", "اللزوجة"], correctAnswer: "الكثافة", unit: '', specificFormula: 'd = m/v', solutionSteps: ['الكثافة (d) هي عامل التحويل بين الحجم والوزن.'] },
-                { id: 14, questionText: "لتحضير 1 لتر 0.9% NaCl (محلول ملحي). نحتاج:", options: [9, 90, 0.9, 900], correctAnswer: 9, unit: 'g', specificFormula: '0.9g per 100ml', solutionSteps: ['1000 ml × (0.9/100) = 9 g'] },
-                { id: 15, questionText: "محلول 40% (w/w) كثافته 1.2. احسب %(w/v).", options: [48, 33, 40, 50], correctAnswer: 48, unit: '%', specificFormula: 'wv = ww × d', solutionSteps: ['40 × 1.2 = 48%'] }
-            ],
-            equilibrium: [
-                { id: 1, questionText: "احسب pH لمحلول 0.01M HCl.", options: [2, 1, 3, 0.01], correctAnswer: 2, unit: '', specificFormula: '-log(0.01)', solutionSteps: ['Strong acid: pH = -log(0.01) = 2'] },
-                { id: 2, questionText: "احسب [H+] إذا كان pH = 3.", options: [0.001, 0.003, 1000, 3], correctAnswer: 0.001, unit: 'M', specificFormula: '10^-pH', solutionSteps: ['10^-3 = 0.001 M'] },
-                { id: 3, questionText: "محلول 0.01M NaOH. احسب pH.", options: [12, 2, 10, 14], correctAnswer: 12, unit: '', specificFormula: 'pOH = -log[OH]', solutionSteps: ['pOH = -log(0.01) = 2', 'pH = 14 - 2 = 12'] },
-                { id: 4, questionText: "إذا كان [H+] = 2×10⁻⁵. احسب pH.", options: [4.7, 5, 2, 9.3], correctAnswer: 4.7, unit: '', specificFormula: '-log(2e-5)', solutionSteps: ['-log(2) + 5 = -0.3 + 5 = 4.7'] },
-                { id: 5, questionText: "حمض ضعيف 0.1M و Ka=10⁻⁵. احسب pH.", options: [3, 1, 5, 2.5], correctAnswer: 3, unit: '', specificFormula: 'H = sqrt(Ka.C)', solutionSteps: ['H = sqrt(10⁻⁵ × 0.1) = 10⁻³', 'pH = 3'] },
-                { id: 6, questionText: "ذوبانية AgCl هي 10⁻⁵ M. احسب Ksp.", options: [1e-10, 1e-5, 2e-5, 1e-25], correctAnswer: 1e-10, unit: '', specificFormula: 'Ksp = s²', solutionSteps: ['(10⁻⁵)² = 10⁻¹⁰'] },
-                { id: 7, questionText: "Ksp لملح CaF2 هو 4×10⁻¹². احسب الذوبانية s.", options: [1e-4, 2e-4, 1e-6, 4e-6], correctAnswer: 1e-4, unit: 'M', specificFormula: '4s³ = Ksp', solutionSteps: ['s³ = 10⁻¹²', 's = 10⁻⁴'] },
-                { id: 8, questionText: "مجموع pH + pOH يساوي دائماً:", options: [14, 7, 1, 0], correctAnswer: 14, unit: '', specificFormula: 'Kw', solutionSteps: ['عند 25 درجة مئوية، المجموع 14.'] },
-                { id: 9, questionText: "احسب [OH-] إذا كان pH = 9.", options: [1e-5, 1e-9, 5, 9], correctAnswer: 1e-5, unit: 'M', specificFormula: 'pOH = 5', solutionSteps: ['pOH = 14 - 9 = 5', '[OH] = 10⁻⁵'] },
-                { id: 10, questionText: "تأثير الأيون المشترك على الذوبانية:", options: ["يقللها", "يزيدها", "لا يؤثر", "يضاعفها"], correctAnswer: "يقللها", unit: '', specificFormula: 'Concept', solutionSteps: ['وجود أيون مشترك يقلل الذوبانية (يزيد الترسيب).'] },
-                { id: 11, questionText: "احسب نسبة التأين لحمض ضعيف [H+]=10⁻³, C=0.1.", options: [1, 0.1, 10, 0.01], correctAnswer: 1, unit: '%', specificFormula: 'alpha = H/C', solutionSteps: ['10⁻³ / 0.1 = 0.01', '0.01 × 100 = 1%'] },
-                { id: 12, questionText: "المحلول المنظم (Buffer) يقاوم التغير في:", options: ["pH", "الحجم", "الضغط", "الكثافة"], correctAnswer: "pH", unit: '', specificFormula: 'Buffer', solutionSteps: ['يقاوم التغير المفاجئ في pH.'] },
-                { id: 13, questionText: "قيمة Kw للماء النقي:", options: [1e-14, 1e-7, 14, 7], correctAnswer: 1e-14, unit: '', specificFormula: 'Constant', solutionSteps: ['1 × 10⁻¹⁴'] },
-                { id: 14, questionText: "إذا خففنا حمضاً قوياً 10 مرات، الـ pH:", options: ["يزيد بمقدار 1", "يقل بمقدار 1", "لا يتغير", "يزيد بمقدار 10"], correctAnswer: "يزيد بمقدار 1", unit: '', specificFormula: '+1', solutionSteps: ['يقل التركيز 10 مرات -> يقل [H+] 10 مرات -> يزيد pH بمقدار 1.'] },
-                { id: 15, questionText: "Ksp لملح Mg(OH)2 صيغته:", options: ["4s³", "s²", "27s⁴", "2s"], correctAnswer: "4s³", unit: '', specificFormula: '4s³', solutionSteps: ['[Mg][OH]² = s(2s)² = 4s³'] }
-            ]
-        };
-
-        const EXAMS = [
-            {
-                id: 'booklet_1',
-                title: 'بوكليت 1: بنك الأسئلة الشامل (100 سؤال)',
-                description: 'يحتوي على 100 سؤال (صح/خطأ واختياري) يغطي كامل المنهج.',
-                questions: [
+        // --- EXAM DATA (Booklet 1 & 2) ---
+        const BOOKLET_1_QUESTIONS = [
   // --- True / False (1-69) ---
   { id: 1, type: 'tf', questionText: "1. تتكون الرابطة الأيونية بين عنصرين الفرق فى السالبية الكهربية بينهما أقل من 1.7", options: ["صح", "خطأ"], correctAnswer: "خطأ", solutionSteps: ["الرابطة الأيونية تتطلب فرق سالبية أكبر من 1.7."] },
   { id: 2, type: 'tf', questionText: "2. ذرات الفلز تفقد الكترون وتتحول إلى أيون موجب", options: ["صح", "خطأ"], correctAnswer: "صح" },
@@ -450,13 +402,9 @@
   { id: 98, type: 'mcq', questionText: "التركيز الفورمالي لـ 0.4 وزن فورمالي في 5 لتر", options: ["1.125", "0.08 فورمال/لتر", "1.25", "2"], correctAnswer: "0.08 فورمال/لتر" },
   { id: 99, type: 'mcq', questionText: "حمض خليك 0.1M و [H+]=1.32x10^-3. احسب ثابت التأين", options: ["1.32x10^-?", "1.32x10^2", "1.77x10^-5", "75"], correctAnswer: "1.77x10^-5" },
   { id: 100, type: 'mcq', questionText: "عيارية Al(OH)3 تركيزه المولاري 0.3 M", options: ["0.1", "0.03", "0.9 عياري", "0.09"], correctAnswer: "0.9 عياري" }
-                ]
-            },
-            {
-                id: 'booklet_2',
-                title: 'امتحان 2024',
-                description: '90 سؤال (صح/خطأ واختياري) - مراجعة شاملة.',
-                questions: [
+];
+
+        const BOOKLET_2_QUESTIONS = [
   // --- True / False (1-60) ---
   { id: 201, type: 'tf', questionText: "1. اعتبر العالم كريستيان هيجنز ان الضوء يتكون من تيار من الحبيبات الدقيقة سريعة الحركة", options: ["صح", "خطأ"], correctAnswer: "خطأ", solutionSteps: ["هيجنز اقترح الطبيعة الموجية للضوء، بينما نيوتن اقترح الطبيعة الجسيمية."] },
   { id: 202, type: 'tf', questionText: "2. موجات الراديو ذات أدنى تردد في الطيف الكهرومغناطيسي", options: ["صح", "خطأ"], correctAnswer: "صح" },
@@ -550,7 +498,20 @@
   { id: 298, type: 'mcq', questionText: "98. الوزن المكافيء ل Al(OH)3 يساوي الوزن الفورمالي مقسوم على", options: ["1", "2", "3", "4"], correctAnswer: "3", solutionSteps: ["لأنه ثلاثي الهيدروكسيل."] },
   { id: 299, type: 'mcq', questionText: "99. لتحضير 0.842 مول من Br- (80) يلزم ... جرام", options: ["66.36", "67.36", "80", "0.2"], correctAnswer: "67.36", specificFormula: 'wt = n * MW', solutionSteps: ["0.842 * 80 = 67.36 g"] },
   { id: 300, type: 'mcq', questionText: "100. عدد الجرامات في 1.2 لتر H2SO4 0.15 N (FW=98)", options: ["4.41", "8.82", "17.64", "0.18"], correctAnswer: "8.82", specificFormula: 'wt = N * EqWt * V', solutionSteps: ["EqWt = 49", "0.15 * 49 * 1.2 = 8.82 g"] }
-                ]
+];
+
+        const EXAMS = [
+            {
+                id: 'booklet_1',
+                title: 'بوكليت 1: بنك الأسئلة الشامل (100 سؤال)',
+                description: 'يحتوي على 100 سؤال (صح/خطأ واختياري) يغطي كامل المنهج.',
+                questions: BOOKLET_1_QUESTIONS
+            },
+            {
+                id: 'booklet_2',
+                title: 'امتحان 2024 (90 سؤال)',
+                description: 'مراجعة شاملة لأسئلة امتحان عام 2024.',
+                questions: BOOKLET_2_QUESTIONS
             },
             {
                 id: 'booklet_3',
@@ -560,243 +521,164 @@
             }
         ];
 
-        // --- View Switching ---
-        function switchView(viewName) {
-            // Hide all views
-            ['quiz', 'laws', 'conversions', 'exams'].forEach(v => {
-                document.getElementById('view-' + v).classList.add('hidden');
-            });
-            // Show selected view
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-            
-            // Update Header
-            const titleMap = {
-                quiz: 'مسائل', laws: 'قوانين', conversions: 'تحويلات', exams: 'امتحانات'
-            };
-            document.getElementById('current-section-title').innerText = titleMap[viewName];
+        // --- Functions ---
 
-            // Reset Styles for buttons
-            ['quiz', 'laws', 'conversions', 'exams'].forEach(v => {
-                const btn = document.getElementById('btn-' + v);
-                btn.className = "w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-gray-50 text-gray-700";
-            });
-            // Active button style
-            const activeBtn = document.getElementById('btn-' + viewName);
-            activeBtn.className = "w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors bg-emerald-50 text-emerald-700 font-bold";
-
-            // Sidebar Visibility Logic
-            if (viewName === 'quiz') {
-                document.getElementById('quiz-sidebar').classList.remove('hidden');
-                document.getElementById('exam-sidebar').classList.add('hidden');
-            } else if (viewName === 'exams') {
-                document.getElementById('quiz-sidebar').classList.add('hidden');
-                document.getElementById('exam-sidebar').classList.remove('hidden');
-                renderExamList();
-            } else {
-                document.getElementById('quiz-sidebar').classList.add('hidden');
-                document.getElementById('exam-sidebar').classList.add('hidden');
-            }
-
-            // Init content if needed
-            if (viewName === 'quiz' && !currentQuizQuestions.length) startQuiz('light_waves');
-            if (viewName === 'laws') renderLaws();
-            if (viewName === 'conversions') renderConversions();
-        }
-
-        // --- Quiz Logic ---
-        let currentQuizQuestions = [];
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let activeLawId = 'light_waves';
-        let skippedCount = 0;
-
-        function renderQuizCategories() {
-            const container = document.getElementById('quiz-categories');
-            container.innerHTML = LAWS.map(law => `
-                <button onclick="startQuiz('${law.id}')" class="w-full text-right p-3 rounded-lg flex items-center justify-between transition-all ${activeLawId === law.id ? 'bg-emerald-50 text-emerald-800 border-r-4 border-emerald-600 font-bold' : 'hover:bg-gray-100 text-gray-600'}">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="${law.icon}" class="w-4 h-4"></i>
-                        <span class="text-sm">${law.title}</span>
+        function renderSummary() {
+            const container = document.getElementById('summary-content');
+            container.innerHTML = SUMMARY_DATA.map((section, idx) => `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b border-gray-100 flex items-center gap-3">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded-full">${idx + 1}</span>
+                        <h3 class="font-bold text-gray-800">${section.title}</h3>
                     </div>
-                </button>
+                    <div class="p-5">
+                        <ul class="list-disc list-inside space-y-3 text-gray-600 leading-relaxed">
+                            ${section.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
             `).join('');
-            lucide.createIcons();
         }
 
-        function startQuiz(lawId) {
-            activeLawId = lawId;
-            // Get questions and shuffle options
-            const rawQuestions = STATIC_QUIZ_BANK[lawId];
-            if (!rawQuestions) return;
-
-            currentQuizQuestions = rawQuestions.map(q => ({
-                ...q,
-                options: [...q.options].sort(() => Math.random() - 0.5)
-            }));
-            
-            currentQuestionIndex = 0;
-            score = 0;
-            skippedCount = 0;
-            
-            // UI Reset
-            document.getElementById('quiz-content').classList.remove('hidden');
-            document.getElementById('quiz-result').classList.add('hidden');
-            document.getElementById('skipped-badge').classList.add('hidden');
-            document.getElementById('score').innerText = 0;
-            
-            renderQuizCategories();
-            renderQuestion();
-        }
-
-        function renderQuestion() {
-            const q = currentQuizQuestions[currentQuestionIndex];
-            const progress = ((currentQuestionIndex + 1) / currentQuizQuestions.length) * 100;
-            
-            document.getElementById('quiz-progress').style.width = `${progress}%`;
-            document.getElementById('question-counter').innerText = `سؤال ${currentQuestionIndex + 1} من ${currentQuizQuestions.length}`;
-
-            let formulaHtml = '';
-            if (q.specificFormula) {
-                formulaHtml = `
-                <div onclick="this.querySelector('.formula-box').classList.toggle('blur-sm')" class="mb-4 inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-100 text-sm font-medium cursor-pointer bg-blue-50/50 select-none">
-                    <i data-lucide="zap" class="w-4 h-4 text-blue-600"></i>
-                    <span class="text-blue-700">القانون:</span>
-                    <div class="formula-box relative px-2 py-1 rounded bg-white border border-blue-200 transition-all duration-300 blur-sm">
-                        <span dir="ltr" class="font-mono font-bold text-blue-800">${q.specificFormula}</span>
-                    </div>
-                    <span class="text-xs text-gray-400 mr-2 font-normal">(اضغط)</span>
-                </div>`;
-            }
-
-            const optionsHtml = q.options.map((opt, idx) => `
-                <button onclick="handleAnswer('${opt}', this)" class="p-4 rounded-xl border-2 text-lg font-semibold transition-all duration-200 flex justify-center items-center relative min-h-[80px] border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-gray-700 cursor-pointer shadow-sm">
-                    ${opt} ${typeof opt === 'number' && q.unit ? `<span class="text-xs ml-1 text-gray-500">${q.unit}</span>` : ''}
-                </button>
-            `).join('');
-
-            document.getElementById('quiz-content').innerHTML = `
-                <div class="animate-fade-in">
-                    ${formulaHtml}
-                    <h3 class="text-xl md:text-2xl font-medium text-gray-800 mb-8 leading-relaxed" dir="rtl">${q.questionText}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" dir="ltr" id="options-grid">
-                        ${optionsHtml}
-                    </div>
-                    <div class="mt-6 flex justify-end" id="skip-btn-container">
-                        <button onclick="skipQuestion()" class="flex items-center gap-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg transition-colors">
-                            تخطي السؤال <i data-lucide="skip-forward" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <div id="explanation-box" class="hidden mt-8 rounded-xl overflow-hidden border border-blue-200 animate-fade-in shadow-sm">
-                        <div class="bg-blue-50 p-4 border-b border-blue-100 flex items-center gap-2">
-                            <i data-lucide="book-open" class="w-5 h-5 text-blue-600"></i>
-                            <h4 class="font-bold text-blue-800">شرح الحل</h4>
+        function renderLaws() {
+            document.getElementById('laws-grid').innerHTML = `
+                <!-- Light -->
+                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
+                    <h3 class="font-bold text-purple-700 mb-4 border-b pb-2">1. قوانين الضوء والطاقة</h3>
+                    <div class="space-y-3 font-mono text-sm" dir="ltr">
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="flex justify-between font-bold text-gray-800"><span>C = λ × ν</span></div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">سرعة الضوء = الطول الموجي × التردد</div>
                         </div>
-                        <div class="bg-white p-5 space-y-3 text-gray-700 font-medium">
-                            ${q.solutionSteps ? q.solutionSteps.map(s => `<p dir="ltr">• ${s}</p>`).join('') : ''}
-                            <div class="mt-4 pt-4 border-t border-gray-100 text-green-700 font-bold bg-green-50 p-3 rounded-lg text-center" dir="ltr">
-                                Correct: ${q.correctAnswer} ${q.unit || ''}
-                            </div>
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="flex justify-between font-bold text-gray-800"><span>E = h × ν</span></div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">طاقة الفوتون = ثابت بلانك × التردد</div>
                         </div>
-                        <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
-                            <button onclick="nextQuestion()" class="px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg font-bold">
-                                ${currentQuestionIndex < currentQuizQuestions.length - 1 ? 'التالي' : 'النتيجة'} <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                            </button>
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="flex justify-between font-bold text-gray-800"><span>E = m × c²</span></div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">معادلة أينشتاين: الطاقة = الكتلة × مربع السرعة</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Concentration -->
+                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
+                    <h3 class="font-bold text-emerald-700 mb-4 border-b pb-2">2. قوانين التركيز</h3>
+                    <div class="space-y-3 font-mono text-sm" dir="ltr">
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="font-bold text-gray-800">M = wt / (MW × V_L)</div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">المولارية = الوزن بالجرام / (الوزن الجزيئي × الحجم باللتر)</div>
+                        </div>
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="font-bold text-gray-800">F = wt / (FW × V_L)</div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">الفورمالية = الوزن / (الوزن الفورمالي × الحجم باللتر)</div>
+                        </div>
+                        <div class="p-2 bg-emerald-50 rounded border border-emerald-100">
+                            <div class="font-bold text-emerald-800">N = M × n</div>
+                            <div class="text-xs text-emerald-600 mt-1 text-right" dir="rtl">العيارية = المولارية × التكافؤ</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- PPM -->
+                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
+                    <h3 class="font-bold text-orange-700 mb-4 border-b pb-2">3. التراكيز الدقيقة</h3>
+                    <div class="space-y-3 font-mono text-sm" dir="ltr">
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="font-bold text-gray-800">PPM = (wt/wt) × 10⁶</div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">جزء في المليون ≈ مليجرام / لتر (في الماء)</div>
+                        </div>
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="font-bold text-gray-800">PPB = (wt/wt) × 10⁹</div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">جزء في البليون ≈ ميكروجرام / لتر (في الماء)</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dilution -->
+                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
+                    <h3 class="font-bold text-blue-700 mb-4 border-b pb-2">4. النسب والتخفيف</h3>
+                    <div class="space-y-3 font-mono text-sm" dir="ltr">
+                        <div class="p-2 bg-gray-50 rounded">
+                            <div class="font-bold text-gray-800">%(w/w) = (wt_solute / wt_total) × 100</div>
+                            <div class="text-xs text-gray-500 mt-1 text-right" dir="rtl">النسبة المئوية الوزنية</div>
+                        </div>
+                        <div class="p-2 bg-blue-50 rounded border border-blue-100">
+                            <div class="font-bold text-blue-800">Osmolarity = n / V(L)</div>
+                            <div class="text-xs text-blue-600 mt-1 text-right" dir="rtl">التركيز الأسموزي = عدد المولات الكلية / الحجم</div>
+                        </div>
+                        <div class="p-2 bg-yellow-50 rounded border border-yellow-100">
+                            <div class="font-bold text-yellow-800">C₁ × V₁ = C₂ × V₂</div>
+                            <div class="text-xs text-yellow-600 mt-1 text-right" dir="rtl">قانون التخفيف: التركيز×الحجم (قبل) = التركيز×الحجم (بعد)</div>
                         </div>
                     </div>
                 </div>
             `;
-            lucide.createIcons();
         }
 
-        function handleAnswer(selectedVal, btnElement) {
-            // Disable all buttons
-            const buttons = document.querySelectorAll('#options-grid button');
-            buttons.forEach(b => b.disabled = true);
-            document.getElementById('skip-btn-container').classList.add('hidden');
+        function renderConversions() {
+            document.getElementById('conversions-list').innerHTML = `
+                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                    <div class="text-center font-bold text-gray-700">ml <span class="text-gray-400">→</span> L</div>
+                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1000</div>
+                    <div class="text-xs text-gray-500">500ml = 0.5L</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                    <div class="text-center font-bold text-gray-700">mg <span class="text-gray-400">→</span> g</div>
+                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1000</div>
+                    <div class="text-xs text-gray-500">250mg = 0.25g</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                    <div class="text-center font-bold text-gray-700">µg <span class="text-gray-400">→</span> g</div>
+                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1,000,000</div>
+                    <div class="text-xs text-gray-500">للتحويل المباشر</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                    <div class="text-center font-bold text-gray-700">nm <span class="text-gray-400">→</span> m</div>
+                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">× 10⁻⁹</div>
+                    <div class="text-xs text-gray-500">لأطوال الموجات</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                    <div class="text-center font-bold text-gray-700">% <span class="text-gray-400">→</span> PPM</div>
+                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">× 10,000</div>
+                    <div class="text-xs text-gray-500">1% = 10,000 PPM</div>
+                </div>
+            `;
+        }
 
-            const q = currentQuizQuestions[currentQuestionIndex];
+        // --- View Switching ---
+        function switchView(viewName) {
+            // Hide all
+            ['summary', 'laws', 'conversions', 'exams'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            // Show selected
+            document.getElementById('view-' + viewName).classList.remove('hidden');
             
-            // Check correctness (loose check for numbers)
-            let isCorrect = false;
-            // Convert back to number if needed for comparison
-            let selectedNum = parseFloat(selectedVal);
-            let correctNum = parseFloat(q.correctAnswer);
+            // Header Update
+            const titles = { summary: 'شرح الملخص', laws: 'القوانين', conversions: 'التحويلات', exams: 'الامتحانات' };
+            document.getElementById('current-section-title').innerText = titles[viewName];
 
-            if (!isNaN(selectedNum) && !isNaN(correctNum)) {
-                // Numeric comparison with tolerance
-                isCorrect = Math.abs(selectedNum - correctNum) < (Math.abs(correctNum) * 0.01) || selectedNum === correctNum;
+            // Button Styles
+            ['summary', 'laws', 'conversions', 'exams'].forEach(v => {
+                document.getElementById('btn-' + v).className = "w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-gray-50 text-gray-700";
+            });
+            document.getElementById('btn-' + viewName).className = "w-full text-right p-3 rounded-lg flex items-center gap-3 transition-colors bg-emerald-50 text-emerald-700 font-bold";
+
+            // Sidebar Logic
+            if (viewName === 'exams') {
+                document.getElementById('exam-sidebar').classList.remove('hidden');
+                renderExamList();
             } else {
-                // String comparison
-                isCorrect = String(selectedVal) === String(q.correctAnswer);
+                document.getElementById('exam-sidebar').classList.add('hidden');
             }
 
-            if (isCorrect) {
-                btnElement.classList.add('correct-answer');
-                score++;
-                document.getElementById('score').innerText = score;
-            } else {
-                btnElement.classList.add('wrong-answer');
-                // Highlight correct one
-                buttons.forEach(b => {
-                    let bVal = parseFloat(b.innerText);
-                    let bText = b.innerText.trim();
-                    // Try numeric match first
-                    if (!isNaN(bVal) && !isNaN(correctNum)) {
-                         if (Math.abs(bVal - correctNum) < (Math.abs(correctNum) * 0.01) || bVal === correctNum) {
-                             b.classList.add('correct-answer');
-                         }
-                    } else if (bText.includes(String(q.correctAnswer))) { // Simple text match fallback
-                        b.classList.add('correct-answer');
-                    }
-                });
-            }
-
-            document.getElementById('explanation-box').classList.remove('hidden');
-        }
-
-        function skipQuestion() {
-            skippedCount++;
-            const badge = document.getElementById('skipped-badge');
-            badge.innerText = `تخطيت: ${skippedCount}`;
-            badge.classList.remove('hidden');
-            nextQuestionLogic();
-        }
-
-        function nextQuestion() {
-            nextQuestionLogic();
-        }
-
-        function nextQuestionLogic() {
-            if (currentQuestionIndex < currentQuizQuestions.length - 1) {
-                currentQuestionIndex++;
-                renderQuestion();
-            } else {
-                showResult();
-            }
-        }
-
-        function showResult() {
-            document.getElementById('quiz-content').classList.add('hidden');
-            document.getElementById('quiz-result').classList.remove('hidden');
-            
-            const percentage = (score / currentQuizQuestions.length);
-            let title = "حاول مرة أخرى";
-            if (percentage >= 0.9) title = "أداء عبقري! 🌟";
-            else if (percentage >= 0.7) title = "ممتاز جداً 👍";
-            
-            document.getElementById('result-title').innerText = title;
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('total-questions').innerText = currentQuizQuestions.length;
-        }
-
-        function restartQuiz() {
-            startQuiz(activeLawId);
+            if (viewName === 'summary') renderSummary();
+            if (viewName === 'laws') renderLaws();
+            if (viewName === 'conversions') renderConversions();
         }
 
         // --- EXAM Logic ---
         function renderExamList() {
             document.getElementById('exam-list').innerHTML = EXAMS.map(exam => `
-                <button onclick="loadExam('${exam.id}')" class="w-full text-right p-3 rounded-lg block transition-all hover:bg-gray-100 text-gray-600 border border-transparent focus:border-orange-500">
+                <button onclick="loadExam('${exam.id}')" class="w-full text-right p-3 rounded-lg block transition-all hover:bg-gray-100 text-gray-600 border border-transparent focus:border-orange-500 mb-2">
                     <div class="font-bold text-sm text-gray-800">${exam.title}</div>
                     <div class="text-xs text-gray-400 mt-1">${exam.description}</div>
                 </button>
@@ -826,7 +708,7 @@
 
                         ${q.specificFormula ? `
                         <div class="mb-4">
-                            <button onclick="toggleExamFormula(${q.id})" class="text-xs flex items-center gap-1 text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded">
+                            <button onclick="document.getElementById('formula-${q.id}').classList.toggle('hidden')" class="text-xs flex items-center gap-1 text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded">
                                 <i data-lucide="zap" class="w-3 h-3"></i> مساعدة: إظهار القانون
                             </button>
                             <div id="formula-${q.id}" class="hidden mt-2 text-sm font-mono text-blue-800 bg-blue-100 p-2 rounded inline-block" dir="ltr">
@@ -849,12 +731,7 @@
             lucide.createIcons();
         }
 
-        function toggleExamFormula(id) {
-            document.getElementById(`formula-${id}`).classList.toggle('hidden');
-        }
-
         function checkExamAnswer(qId, selectedVal, btn) {
-            // Find Question
             let q = null;
             for(const e of EXAMS) {
                 q = e.questions.find(qu => qu.id === qId);
@@ -866,13 +743,10 @@
             const feedback = document.getElementById(`feedback-${qId}`);
             const iconContainer = document.getElementById(`icon-${qId}`);
             
-            // Disable buttons in this card
             const btns = card.querySelectorAll('.exam-opt-btn');
             btns.forEach(b => b.disabled = true);
 
-            // Check correctness
             let isCorrect = String(selectedVal) === String(q.correctAnswer);
-            // Numeric check fallback
             if (!isCorrect && !isNaN(parseFloat(selectedVal))) {
                  let n1 = parseFloat(selectedVal);
                  let n2 = parseFloat(q.correctAnswer);
@@ -899,121 +773,10 @@
             lucide.createIcons();
         }
 
-        // --- Laws & Conversions Rendering (Static HTML Injection) ---
-        function renderLaws() {
-            document.getElementById('laws-grid').innerHTML = `
-                <!-- Light -->
-                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
-                    <h3 class="font-bold text-purple-700 mb-4 border-b pb-2">1. قوانين الضوء والطاقة</h3>
-                    <div class="space-y-3 font-mono text-sm" dir="ltr">
-                        <div class="flex justify-between p-2 bg-gray-50 rounded">
-                            <span>C = λ × ν</span> 
-                            <span class="text-gray-500 text-xs">سرعة الضوء (3×10⁸) = الطول الموجي × التردد</span>
-                        </div>
-                        <div class="flex justify-between p-2 bg-gray-50 rounded">
-                            <span>E = h × ν</span> 
-                            <span class="text-gray-500 text-xs">طاقة الفوتون = ثابت بلانك × التردد</span>
-                        </div>
-                        <div class="flex justify-between p-2 bg-gray-50 rounded">
-                            <span>E = m × c²</span> 
-                            <span class="text-gray-500 text-xs">معادلة أينشتاين: الطاقة = الكتلة × مربع السرعة</span>
-                        </div>
-                        <div class="flex justify-between p-2 bg-gray-50 rounded">
-                            <span>h = 6.626×10⁻³⁴</span> 
-                            <span class="text-gray-500 text-xs">ثابت بلانك</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Concentration -->
-                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
-                    <h3 class="font-bold text-emerald-700 mb-4 border-b pb-2">2. قوانين التركيز</h3>
-                    <div class="space-y-3 font-mono text-sm" dir="ltr">
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="font-bold">Molarity (M)</div>
-                            <div>M = wt(g) / (MW × V_L)</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">المولارية = وزن المذاب بالجرام / (الوزن الجزيئي × الحجم باللتر)</div>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="font-bold">Formality (F)</div>
-                            <div>F = wt(g) / (FW × V_L)</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">الفورمالية (للأملاح) = الوزن / (الوزن الفورمالي × الحجم)</div>
-                        </div>
-                        <div class="p-2 bg-emerald-50 rounded border border-emerald-100">
-                            <div class="font-bold text-emerald-800">Normality (N)</div>
-                            <div>N = M × n</div>
-                            <div class="text-xs text-emerald-600 mt-1" dir="rtl">العيارية = المولارية × التكافؤ</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- PPM -->
-                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
-                    <h3 class="font-bold text-orange-700 mb-4 border-b pb-2">3. التراكيز الدقيقة</h3>
-                    <div class="space-y-3 font-mono text-sm" dir="ltr">
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="font-bold">PPM</div>
-                            <div>PPM = (wt/wt) × 10⁶ ≈ mg/L</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">جزء في المليون = مليجرام / لتر (في المحاليل المائية)</div>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="font-bold">PPB</div>
-                            <div>PPB = (wt/wt) × 10⁹ ≈ µg/L</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">جزء في البليون = ميكروجرام / لتر</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Dilution -->
-                <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
-                    <h3 class="font-bold text-blue-700 mb-4 border-b pb-2">4. النسب والتخفيف</h3>
-                    <div class="space-y-3 font-mono text-sm" dir="ltr">
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div>%(w/w) = (wt_solute / wt_total) × 100</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">النسبة الوزنية = (وزن المذاب / الوزن الكلي) × 100</div>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div>%(w/v) = (g / ml) × 100</div>
-                            <div class="text-xs text-gray-500 mt-1" dir="rtl">النسبة الوزنية الحجمية = (الوزن بالجرام / الحجم بالمليلتر) × 100</div>
-                        </div>
-                        <div class="p-2 bg-yellow-50 rounded border border-yellow-100">
-                            <div class="font-bold">Dilution</div>
-                            <div>C₁ × V₁ = C₂ × V₂</div>
-                            <div class="text-xs text-gray-600 mt-1" dir="rtl">قانون التخفيف: التركيز × الحجم (قبل) = التركيز × الحجم (بعد)</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderConversions() {
-            document.getElementById('conversions-list').innerHTML = `
-                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-                    <div class="text-center font-bold text-gray-700">ml <span class="text-gray-400">→</span> L</div>
-                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1000</div>
-                    <div class="text-xs text-gray-500">500ml = 0.5L</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-                    <div class="text-center font-bold text-gray-700">mg <span class="text-gray-400">→</span> g</div>
-                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1000</div>
-                    <div class="text-xs text-gray-500">250mg = 0.25g</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-                    <div class="text-center font-bold text-gray-700">µg <span class="text-gray-400">→</span> g</div>
-                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">÷ 1,000,000</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-                    <div class="text-center font-bold text-gray-700">nm <span class="text-gray-400">→</span> m</div>
-                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">× 10⁻⁹</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-                    <div class="text-center font-bold text-gray-700">% <span class="text-gray-400">→</span> PPM</div>
-                    <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded">× 10,000</div>
-                    <div class="text-xs text-gray-500">1% = 10,000 PPM</div>
-                </div>
-            `;
-        }
-
-        // Initial Load
+        // Init
         lucide.createIcons();
-        startQuiz('light_waves'); // Default view
+        switchView('summary');
+        renderSummary();
     </script>
 </body>
 </html>
